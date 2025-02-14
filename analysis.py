@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 
-data_file = 'Data/mosfet_beta.xml'
+data_file = 'Data/mosfet_overweekend_beta.xml'
 tree = ET.parse(data_file) 
 root = tree.getroot()
 datasets = []
@@ -44,7 +44,7 @@ for dataset in datasets:
     threshold_voltages.append(threshold_voltage)
 
 plt.errorbar(times, threshold_voltages)
-title = "Vgs vs time"
+title = "MOSFET Vgs vs time irradiated"
 # plt.legend()
 plt.title(title)
 plt.ylabel('Vgs')
