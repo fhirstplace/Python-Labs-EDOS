@@ -3,7 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 
-tree = ET.parse('Data/mosfet_beta.xml') 
+data_file = 'Data/mosfet_beta.xml'
+tree = ET.parse(data_file) 
 root = tree.getroot()
 datasets = []
 
@@ -33,12 +34,16 @@ for dataset in datasets:
     current_std = dataset[0][1]
     voltages = dataset[1][0]
     voltage_std = dataset[1][1]
-    plt.errorbar(voltages,currents,xerr = voltage_std, yerr = current_std, label=str("t = "+str(i)+" hrs"), color = (i/70, 0, 1 - i/70))
+    if i % 10 == 0:
+        plt.errorbar(voltages,currents,xerr = voltage_std, yerr = current_std, label=str("t = "+str(i)+" hrs"), color = (i/70, 0, 1 - i/70))
+    else:
+        plt.errorbar(voltages,currents,xerr = voltage_std, yerr = current_std, color = (i/70, 0, 1 - i/70))
     i+=1
 
+title = "Id vs Vgs for a MOSFET irradiated over 68 hours with beta particles"
 plt.legend()
-plt.title("Id vs Vgs for a MOSFET irradiated over 68 hours with beta particles")
+plt.title(title)
 plt.ylabel('Id')
 plt.xlabel('Vgs')
+plt.savefig(fname = "Graphs/"+data_file[5:-4]+".png")
 plt.show()
-
