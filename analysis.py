@@ -28,22 +28,26 @@ times = range(0,len(root))
 # z = np.polyfit(voltages, currents, 1)
 # Y1p = np.poly1d(z)
 
-i = 0
+threshold_voltages = []
 for dataset in datasets:
     currents = dataset[0][0]
     current_std = dataset[0][1]
     voltages = dataset[1][0]
     voltage_std = dataset[1][1]
-    if i % 10 == 0:
-        plt.errorbar(voltages,currents,xerr = voltage_std, yerr = current_std, label = "t="+str(i)+"hours", color = (i/len(root), 0, 1 - i/len(root)))
-    else:
-        plt.errorbar(voltages,currents,xerr = voltage_std, yerr = current_std, color = (i/len(root), 0, 1 - i/len(root)))
-    i+=1
+    largest_change_in_current = 0
+    threshold_voltage = 0
+    for i in range(0, len(currents) - 1):
+        change_in_current = currents[i+1] - currents[i] 
+        if change_in_current > largest_change_in_current:
+            largest_change_in_current = change_in_current
+            threshold_voltage = (voltages[i] + voltages[i+1]) / 2
+    threshold_voltages.append(threshold_voltage)
 
-title = "Id vs Vgs"
-plt.legend()
+plt.errorbar(times, threshold_voltages)
+title = "Vgs vs time"
+# plt.legend()
 plt.title(title)
-plt.ylabel('I')
-plt.xlabel('V')
-plt.savefig(fname = "Graphs/"+data_file[5:-4]+".png")
+plt.ylabel('Vgs')
+plt.xlabel('t (hrs)')
+plt.savefig(fname = "Graphs/"+data_file[5:-4]+"VgsT.png")
 plt.show()
