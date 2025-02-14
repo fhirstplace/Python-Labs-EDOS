@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 
-data_file = 'Data/Data_Overweekend_Beta.xml'
+data_file = 'Data/mosfet_beta.xml'
 tree = ET.parse(data_file) 
 root = tree.getroot()
 datasets = []
@@ -35,13 +35,12 @@ for dataset in datasets:
     voltages = dataset[1][0]
     voltage_std = dataset[1][1]
     if i % 10 == 0:
-        plt.errorbar(voltages,currents,xerr = voltage_std, yerr = current_std, label = "t="+str(i)+"hours", color = (i/71, 0, 1 - i/71))
+        plt.errorbar(voltages,currents,xerr = voltage_std, yerr = current_std, label = "t="+str(i)+"hours", color = (i/len(root), 0, 1 - i/len(root)))
     else:
-        plt.errorbar(voltages,currents,xerr = voltage_std, yerr = current_std, color = (i/71, 0, 1 - i/71))
-
+        plt.errorbar(voltages,currents,xerr = voltage_std, yerr = current_std, color = (i/len(root), 0, 1 - i/len(root)))
     i+=1
 
-title = "I vs V for a beta irradiated CCR"
+title = "Id vs Vgs"
 plt.legend()
 plt.title(title)
 plt.ylabel('I')
