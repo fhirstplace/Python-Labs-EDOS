@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 
-data_file = 'Data/mosfet_overweekend_beta.xml'
+data_file = 'Data/mosfet_beta92_overnight.xml'
 tree = ET.parse(data_file) 
 root = tree.getroot()
 datasets = []
@@ -23,11 +23,6 @@ for dataset in root:
     item = [[currents, current_std], [voltages, voltage_std]]
     datasets.append(item)
 
-
-times = range(0,len(root))
-# z = np.polyfit(voltages, currents, 1)
-# Y1p = np.poly1d(z)
-
 threshold_voltages = []
 threshold_voltages_errors = []
 for dataset in datasets:
@@ -46,9 +41,14 @@ for dataset in datasets:
     threshold_voltages.append(threshold_voltage)
     threshold_voltages_errors.append(threshold_voltages_error)
 
-plt.errorbar(times, threshold_voltages, yerr = threshold_voltages_errors)
+times = range(0,len(root))
+z = np.polyfit(times, threshold_voltages, 1)
+Y1p = np.poly1d(z)
+
+plt.errorbar(times, threshold_voltages, yerr = threshold_voltages_errors, label = "data")
+plt.errorbar(times, Y1p(times), fmt = '.', color = "black", label = 'model')
 title = "MOSFET Vgs vs time irradiated"
-# plt.legend()
+plt.legend()
 plt.title(title)
 plt.ylabel('Vgs')
 plt.xlabel('t (hrs)')
