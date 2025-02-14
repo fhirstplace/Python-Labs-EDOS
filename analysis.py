@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 
-data_file = 'Data/Data_Overnight_Alpha.xml'
+data_file = 'Data/Data_Overweekend_Beta.xml'
 tree = ET.parse(data_file) 
 root = tree.getroot()
 datasets = []
@@ -34,14 +34,14 @@ for dataset in datasets:
     current_std = dataset[0][1]
     voltages = dataset[1][0]
     voltage_std = dataset[1][1]
-    if i % 5 == 0:
-        plt.errorbar(voltages,currents,xerr = voltage_std, yerr = current_std, label = "t="+str(i)+"hours", color = (i/20, 0, 1 - i/20))
+    if i % 10 == 0:
+        plt.errorbar(voltages,currents,xerr = voltage_std, yerr = current_std, label = "t="+str(i)+"hours", color = (i/71, 0, 1 - i/71))
     else:
-        plt.errorbar(voltages,currents,xerr = voltage_std, yerr = current_std, color = (i/20, 0, 1 - i/20))
+        plt.errorbar(voltages,currents,xerr = voltage_std, yerr = current_std, color = (i/71, 0, 1 - i/71))
 
     i+=1
 
-title = "I vs V for an alpha irradiated CCR"
+title = "I vs V for a beta irradiated CCR"
 plt.legend()
 plt.title(title)
 plt.ylabel('I')
