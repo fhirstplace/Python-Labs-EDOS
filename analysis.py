@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 
-data_file = 'Data/mosfet_overweekend_beta.xml'
+data_file = 'Data/mosfet_beta92_overnight.xml'
 tree = ET.parse(data_file) 
 root = tree.getroot()
 datasets = []
