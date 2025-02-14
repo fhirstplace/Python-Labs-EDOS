@@ -8,6 +8,7 @@ tree = ET.parse(data_file)
 root = tree.getroot()
 datasets = []
 
+#gathering data from xml file
 for dataset in root:
     currents = []
     current_std = []
@@ -23,6 +24,7 @@ for dataset in root:
     item = [[currents, current_std], [voltages, voltage_std]]
     datasets.append(item)
 
+#analysing data
 threshold_voltages = []
 threshold_voltages_errors = []
 for dataset in datasets:
@@ -41,10 +43,14 @@ for dataset in datasets:
     threshold_voltages.append(threshold_voltage)
     threshold_voltages_errors.append(threshold_voltages_error)
 
+#times in hrs
 times = range(0,len(root))
+
+#modelling
 z = np.polyfit(times, threshold_voltages, 1)
 Y1p = np.poly1d(z)
 
+#plotting
 plt.errorbar(times, threshold_voltages, yerr = threshold_voltages_errors, label = "data")
 plt.errorbar(times, Y1p(times), fmt = '.', color = "black", label = 'model')
 title = "MOSFET Vgs vs time irradiated"
