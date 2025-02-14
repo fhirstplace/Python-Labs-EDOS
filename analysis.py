@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 
-data_file = 'Data/uniradiated_mosfetVDS.xml'
+data_file = 'Data/Data_Overnight_Alpha.xml'
 tree = ET.parse(data_file) 
 root = tree.getroot()
 datasets = []
@@ -34,14 +34,17 @@ for dataset in datasets:
     current_std = dataset[0][1]
     voltages = dataset[1][0]
     voltage_std = dataset[1][1]
-    print(i)
-    plt.errorbar(voltages,currents,xerr = voltage_std, yerr = current_std, color = (i/70, 0, 1 - i/70))
+    if i % 5 == 0:
+        plt.errorbar(voltages,currents,xerr = voltage_std, yerr = current_std, label = "t="+str(i)+"hours", color = (i/20, 0, 1 - i/20))
+    else:
+        plt.errorbar(voltages,currents,xerr = voltage_std, yerr = current_std, color = (i/20, 0, 1 - i/20))
+
     i+=1
 
-title = "Id vs VDS for a MOSFET with constant Vgs=3.7V"
-# plt.legend()
+title = "I vs V for an alpha irradiated CCR"
+plt.legend()
 plt.title(title)
-plt.ylabel('Ids')
-plt.xlabel('Vds')
+plt.ylabel('I')
+plt.xlabel('V')
 plt.savefig(fname = "Graphs/"+data_file[5:-4]+".png")
 plt.show()
