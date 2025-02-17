@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 
-data_file = 'Data/mosfet_beta92_overnight.xml'
+data_file = 'Data/mosfet_beta92.xml'
 tree = ET.parse(data_file) 
 root = tree.getroot()
 datasets = []
@@ -44,7 +44,8 @@ for dataset in datasets:
     threshold_voltages_errors.append(threshold_voltages_error)
 
 #times in hrs
-times = range(0,len(root))
+#times = range(0,len(root))
+times = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 91]
 
 #modelling
 z = np.polyfit(times, threshold_voltages, 1)
