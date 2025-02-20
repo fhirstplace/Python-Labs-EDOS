@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 
-data_file = 'Data/arch_uniradiated_linear.xml'
+data_file = 'Data/Ba133_uniradiated_linear.xml'
 tree = ET.parse(data_file) 
 root = tree.getroot()
 datasets = []
@@ -36,16 +36,16 @@ for dataset in datasets:
     voltages = dataset[1][0]
     voltage_std = dataset[1][1]
     if i % 10 == 0:
-        plt.errorbar(voltages,currents,xerr = voltage_std, yerr = current_std, label = "t="+str(i)+"hours", color = (i/71, 0, 1 - i/71))
+        plt.errorbar(voltages,currents,xerr = voltage_std, yerr = current_std, label = "uniradiated", color = (i/71, 0, 1 - i/71))
     else:
         plt.errorbar(voltages,currents,xerr = voltage_std, yerr = current_std, color = (i/71, 0, 1 - i/71))
 
     i+=1
 
-title = "I vs V for a MOSFET"
+title = "Id vs Vg for a MOSFET"
 plt.legend()
 plt.title(title)
-plt.ylabel('I')
-plt.xlabel('V')
+plt.ylabel('Id')
+plt.xlabel('Vg')
 plt.savefig(fname = "Graphs/"+data_file[5:-4]+".png")
 plt.show()
