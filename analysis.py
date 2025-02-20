@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 
-data_file = 'Data/archeology_Mosfet_Resistor.xml'
+data_file = 'Data/arch_uniradiated_linear.xml'
 tree = ET.parse(data_file) 
 root = tree.getroot()
 datasets = []
