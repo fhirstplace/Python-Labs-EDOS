@@ -3,11 +3,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 
+#parse xml file
 data_file = 'Data/Ba133_uniradiated_linear.xml'
 tree = ET.parse(data_file) 
 root = tree.getroot()
 datasets = []
 
+#parse data
 for dataset in root:
     currents = []
     current_std = []
@@ -25,10 +27,10 @@ for dataset in root:
 
 
 times = range(0,len(root))
-
 # z = np.polyfit(voltages, currents, 1)
 # Y1p = np.poly1d(z)
 
+#plot data
 i = 0
 for dataset in datasets:
     currents = dataset[0][0]
@@ -39,9 +41,9 @@ for dataset in datasets:
         plt.errorbar(voltages,currents,xerr = voltage_std, yerr = current_std, label = "uniradiated", color = (i/71, 0, 1 - i/71))
     else:
         plt.errorbar(voltages,currents,xerr = voltage_std, yerr = current_std, color = (i/71, 0, 1 - i/71))
-
     i+=1
 
+# make graph things
 title = "Id vs Vg for a MOSFET"
 plt.legend()
 plt.title(title)
