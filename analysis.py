@@ -53,13 +53,16 @@ for dataset in datasets:
     max_derivative_index = 0
     for i in range(len(currents) - 1):
         gradient = (currents[i + 1] - currents[i]) / (voltages[i + 1] - voltages[i])
-        if gradient > max_derivative:
+        if gradient > max_derivative and currents[i] > 0:
             max_derivative = gradient
             max_derivative_index = i
+            gradient_err = gradient * np.sqrt((current_std[i] / currents[i])**2 + (voltage_std[i + 1] / voltages[i + 1])**2 + (voltage_std[i] / voltages[i])**2)
     f = lambda x : max_derivative * (x - voltages[max_derivative_index]) + currents[max_derivative_index]
     plt.errorbar(voltages, list(map(f,(voltages))),fmt="--", color = 'red')
-    print("x-intercept = " + str((-currents[max_derivative_index] / max_derivative) + voltages[max_derivative_index]))
-
+    #error calculations
+    x_intercept = (-currents[max_derivative_index] / max_derivative) + voltages[max_derivative_index]
+    error = np.sqrt((currents[max_derivative_index] / max_derivative) * np.sqrt((current_std[max_derivative_index] / currents[max_derivative_index])**2 + (gradient_err / max_derivative)**2)**2 + voltage_std[max_derivative_index]**2)
+    print("Threshold voltage: ", x_intercept, "+/-", error)
 
 # make graph things
 title = "Id vs Vg for a MOSFET"
