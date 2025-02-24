@@ -6,9 +6,10 @@ import scipy.stats as stats
 iv_graph = True
 steepest_line = True
 derivative = True
-vt_over_time = True
+dvt_over_time = False
+lvt_over_time = False
 
-if (iv_graph or steepest_line or derivative) and vt_over_time:
+if (iv_graph or steepest_line or derivative) and (dvt_over_time or lvt_over_time):
     print("Please only select compatible graph types")
     exit()
 
@@ -75,26 +76,40 @@ def plot_steepest_line(datasets):
         error = np.sqrt((currents[max_derivative_index] / max_derivative) * np.sqrt((current_std[max_derivative_index] / currents[max_derivative_index])**2 + (gradient_err / max_derivative)**2)**2 + voltage_std[max_derivative_index]**2)
         print("Threshold voltage: ", x_intercept, "+/-", error)
 
+def calculate_derivative(x, y):
+    derivative = np.array([])
+    for i in range(1, len(y) - 1):
+        gradient = (y[i + 1] - y[i - 1]) / (x[i + 1] - x[i - 1])
+        derivative = np.append(derivative, gradient)
+    return list(derivative)
+
+def calculate_smoothed_derivative(x, y):
+    derivative = np.array([])
+    r = 3
+    for i in range(r, len(y) - r - 1):
+        #TODO: Implement smoothing algorithm
+        pass
+
 #calculate and plot derivative
 def plot_derivative(datasets):
     for dataset in datasets:
         currents = dataset[0][0]
         voltages = dataset[1][0]
-        derivative = np.array([])
-        for i in range(1, len(currents) - 1):
-            gradient = (currents[i + 1] - currents[i - 1]) / (voltages[i + 1] - voltages[i - 1])
-            derivative = np.append(derivative, gradient)
+        derivative = calculate_derivative(voltages, currents)
+        derivative2 = calculate_derivative(voltages[1:-1], derivative)
         max_current = max(currents)
-        scaled_derivative = derivative * (max_current / max(derivative))
-        plt.errorbar(voltages[1:-1],scaled_derivative,fmt="--", color = 'green')
-        derivative = list(derivative)
-        index_max_derivative = derivative.index(max(derivative))
-        max_derivative_voltage = voltages[index_max_derivative + 1]
-        error = max((voltages[index_max_derivative + 2]) - max_derivative_voltage, max_derivative_voltage - voltages[index_max_derivative])
-        print("Derivative Maximum: ", max_derivative_voltage, "+/-", error)
+        scaled_derivative2 = np.array(derivative2) * (max_current / max(derivative2))
+        offset = int(-(len(derivative2) - len(voltages)) / 2)
+        voltages = voltages[offset:-offset]
+        plt.errorbar(voltages,scaled_derivative2,fmt="--", color = 'green')
+        index_max_derivative2 = derivative2.index(max(derivative2))
+        max_derivative2_voltage = voltages[index_max_derivative2]
+        error = max((voltages[index_max_derivative2 + 1]) - max_derivative2_voltage, max_derivative2_voltage - voltages[index_max_derivative2 - 1])
+        print("Second Derivative Maximum: ", max_derivative2_voltage, "+/-", error)
 
+#calculate and plot derivative calculation of threshold voltages over time
 def plot_derivative_thresholds_time(datasets):
-    max_derivative_voltages = []
+    max_derivative2_voltages = []
     errors = []
     times = range(0, len(datasets))
     for dataset in datasets:
@@ -102,14 +117,15 @@ def plot_derivative_thresholds_time(datasets):
         current_std = dataset[0][1]
         voltages = dataset[1][0]
         voltage_std = dataset[1][1]
-        derivative = []
-        for i in range(1, len(currents) - 1):
-            gradient = (currents[i + 1] - currents[i - 1]) / (voltages[i + 1] - voltages[i - 1])
-            derivative.append(gradient)
-        index_max_derivative = derivative.index(max(derivative))
-        max_derivative_voltages.append(voltages[index_max_derivative + 1])
-        errors.append(max((voltages[index_max_derivative + 2]) - voltages[index_max_derivative + 1], voltages[index_max_derivative + 1] - voltages[index_max_derivative]))
-    plt.errorbar(times, max_derivative_voltages, xerr = voltage_std, yerrs = errors, color = 'green')
+        derivative = calculate_derivative(voltages, currents)
+        derivative2 = calculate_derivative(voltages[1:-1], derivative)
+        offset = int(-(len(derivative2) - len(voltages)) / 2)
+        voltages = voltages[offset:-offset]
+        index_max_derivative2 = derivative2.index(max(derivative2))
+        max_derivative2_voltages.append(voltages[index_max_derivative2])
+        errors.append(max((voltages[index_max_derivative2 + 1]) - voltages[index_max_derivative2], voltages[index_max_derivative2] - voltages[index_max_derivative2 - 1]))
+    plt.errorbar(times, max_derivative2_voltages, xerr = voltage_std, yerrs = errors, color = 'green')
+
 
 datasets = xml_to_datasets(data_file)
 # make graph things
@@ -124,7 +140,7 @@ if steepest_line:
     plot_steepest_line(datasets)
 if derivative:
     plot_derivative(datasets)
-if vt_over_time:
+if dvt_over_time:
     plot_derivative_thresholds_time(datasets)
     title = "Threshold Voltage vs Time"
     plt.ylabel('Vt')
@@ -132,7 +148,7 @@ if vt_over_time:
 
 if iv_graph:
     file_name = "Graphs/" + data_file[5:-4] + "_iv" + ".png"
-if vt_over_time:
+if dvt_over_time:
     file_name = "Graphs/" + data_file[5:-4] + "_VtT" + ".png"
 plt.legend()
 plt.title(title)
