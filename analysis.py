@@ -6,7 +6,7 @@ import scipy.stats as stats
 iv_graph = False
 steepest_line = False
 derivative = False
-dvt_over_time = True
+dvt_over_time = False
 lvt_over_time = True
 linear_fit = True
 
@@ -162,7 +162,7 @@ def plot_steepest_threshold_time(datasets, times=None, colour = "red", label="st
         f = lambda x : max_derivative * (x - voltages[max_derivative_index]) + currents[max_derivative_index]
         #error calculations
         x_intercept = (-currents[max_derivative_index] / max_derivative) + voltages[max_derivative_index]
-        error = np.sqrt((currents[max_derivative_index] / max_derivative) * np.sqrt((current_std[max_derivative_index] / currents[max_derivative_index])**2 + (gradient_err / max_derivative)**2)**2 + voltage_std[max_derivative_index]**2)
+        error = np.sqrt(0.005**2 + (currents[max_derivative_index] / max_derivative) * np.sqrt((current_std[max_derivative_index] / currents[max_derivative_index])**2 + (gradient_err / max_derivative)**2)**2 + voltage_std[max_derivative_index]**2)
         x_intercepts.append(x_intercept)
         errors.append(error)
     plt.errorbar(times, x_intercepts, yerr = errors, color = colour, label=label)
@@ -194,15 +194,20 @@ if dvt_over_time:
     plt.xlabel('Time hrs')
 if lvt_over_time:
     title = "Threshold Voltage vs Time"
-    threshold_voltages = plot_steepest_threshold_time(datasets)[0]
+    threshold_voltages = plot_steepest_threshold_time(datasets)
     times = range(0,len(datasets))
     if data_file2 != None:
         threshold_voltages.append(plot_steepest_threshold_time(datasets2, times=range(len(datasets), len(datasets) + len(datasets2)),colour = "Purple", label="steepest line method (no source)"))[0]
         times = range(0,len(datasets) + len(datasets2))
     if linear_fit:
-        z = np.polyfit(times, threshold_voltages, 1)
+        z = np.polyfit(times, threshold_voltages[0], 1)
         Y1p = np.poly1d(z)
         plt.errorbar(times, Y1p(times), fmt = '--', color = "black", label = 'model')
+        chi_2 = 0
+        for i in range(len(threshold_voltages[0])):
+            chi_2 += (threshold_voltages[0][i] - Y1p(times[i]))**2 /(threshold_voltages[1][i]**2)
+        print("chi^2:", chi_2)
+        print("Normalised chi^2:", chi_2 / (len(threshold_voltages[0]) - 2))
 
 #define file name
 if iv_graph:
