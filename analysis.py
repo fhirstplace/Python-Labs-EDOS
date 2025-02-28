@@ -8,6 +8,7 @@ steepest_line = False
 derivative = False
 dvt_over_time = True
 lvt_over_time = True
+linear_fit = True
 
 if (iv_graph or steepest_line or derivative) and (dvt_over_time or lvt_over_time):
     print("Please only select compatible graph types")
@@ -118,7 +119,7 @@ def plot_derivative(datasets):
         print("Second Derivative Maximum: ", max_derivative2_voltage, "+/-", error)
 
 #calculate and plot derivative calculation of threshold voltages over time
-def plot_derivative_thresholds_time(datasets, times=None, colour = "green"):
+def plot_derivative_thresholds_time(datasets, times=None, colour = "green", label="2nd derivative method"):
     max_derivative2_voltages = []
     errors = []
     if times == None:
@@ -137,9 +138,9 @@ def plot_derivative_thresholds_time(datasets, times=None, colour = "green"):
         index_max_derivative2 = derivative2.index(max(derivative2))
         max_derivative2_voltages.append(voltages[index_max_derivative2])
         errors.append(max((voltages[index_max_derivative2 + 1]) - voltages[index_max_derivative2], voltages[index_max_derivative2] - voltages[index_max_derivative2 - 1]))
-    plt.errorbar(times, max_derivative2_voltages, yerr = errors, color = colour, label="2nd derivative method")
+    plt.errorbar(times, max_derivative2_voltages, yerr = errors, color = colour, label = label)
 
-def plot_steepest_threshold_time(datasets, times=None, colour = "red"):
+def plot_steepest_threshold_time(datasets, times=None, colour = "red", label="steepest line method"):
     x_intercepts = []
     errors = []
     if times == None:
@@ -164,12 +165,13 @@ def plot_steepest_threshold_time(datasets, times=None, colour = "red"):
         error = np.sqrt((currents[max_derivative_index] / max_derivative) * np.sqrt((current_std[max_derivative_index] / currents[max_derivative_index])**2 + (gradient_err / max_derivative)**2)**2 + voltage_std[max_derivative_index]**2)
         x_intercepts.append(x_intercept)
         errors.append(error)
-    plt.errorbar(times, x_intercepts, yerr = errors, color = colour, label="steepest line method")
-
+    plt.errorbar(times, x_intercepts, yerr = errors, color = colour, label=label)
+    return [x_intercepts, errors]
 
 datasets = xml_to_datasets(data_file)
 if data_file2 != None:
     datasets2 = xml_to_datasets(data_file2)
+
 # make graph things
 if iv_graph:
     plot_iv(datasets)
@@ -185,23 +187,31 @@ if derivative:
 if dvt_over_time:
     plot_derivative_thresholds_time(datasets)
     if data_file2 != None:
-        plot_derivative_thresholds_time(datasets2, times=range(len(datasets), len(datasets) + len(datasets2)),colour = "blue")
+        plot_derivative_thresholds_time(datasets2, times=range(len(datasets), len(datasets) + len(datasets2)),colour = "blue",label="2nd derivative method (no source)")
     title = "Threshold Voltage vs Time"
     plt.xlim(left=0)
     plt.ylabel('Vt')
     plt.xlabel('Time hrs')
 if lvt_over_time:
     title = "Threshold Voltage vs Time"
-    plot_steepest_threshold_time(datasets)
+    threshold_voltages = plot_steepest_threshold_time(datasets)[0]
+    times = range(0,len(datasets))
     if data_file2 != None:
-        plot_steepest_threshold_time(datasets2, times=range(len(datasets), len(datasets) + len(datasets2)),colour = "Purple")
+        threshold_voltages.append(plot_steepest_threshold_time(datasets2, times=range(len(datasets), len(datasets) + len(datasets2)),colour = "Purple", label="steepest line method (no source)"))[0]
+        times = range(0,len(datasets) + len(datasets2))
+    if linear_fit:
+        z = np.polyfit(times, threshold_voltages, 1)
+        Y1p = np.poly1d(z)
+        plt.errorbar(times, Y1p(times), fmt = '--', color = "black", label = 'model')
 
+#define file name
 if iv_graph:
     file_name = "Graphs/" + data_file[5:-4] + "_iv" + ".png"
 if dvt_over_time or lvt_over_time:
     file_name = "Graphs/" + data_file[5:-4] + "_VtT" + ".png"
 if data_file2 != None:
     file_name = "Graphs/" + data_file[5:-4] + "_VtT" + "_combined" + data_file[5:-4] + ".png"
+#making graph details
 plt.legend()
 plt.title(title)
 plt.savefig(fname = file_name)
