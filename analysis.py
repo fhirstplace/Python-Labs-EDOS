@@ -3,15 +3,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 
-fig, ax = plt.subplots(2, 1, sharex=True, figsize=(10,8), gridspec_kw={'height_ratios': [4, 1]})
-fig.subplots_adjust(hspace=0)
-
 iv_graph = False
 steepest_line = False
 derivative = False
 dvt_over_time = False
 lvt_over_time = True
-linear_fit = True
+linear_fit = False
+
+if linear_fit:
+    fig, ax = plt.subplots(2, 1, sharex=True, figsize=(10,8), gridspec_kw={'height_ratios': [4, 1]})
+    fig.subplots_adjust(hspace=0)
+else:
+    fig, ax = plt.subplots()
+    ax = [ax]
 
 if (iv_graph or steepest_line or derivative) and (dvt_over_time or lvt_over_time):
     print("Please only select compatible graph types")
@@ -233,10 +237,13 @@ font = {'family': 'serif',
         'weight': 'normal',
         'size': 18,
         }
-ax[1].set_ylabel("Normalised \nResiduals", fontdict = font)
-ax[1].set_xlabel('Time (hrs)', fontdict = font)
+if linear_fit:
+    ax[1].set_ylabel("Normalised \nResiduals", fontdict = font)
+    ax[1].set_xlabel('Time (hrs)', fontdict = font)
+else:
+    ax[0].set_xlabel('Time (hrs)', fontdict = font)
 ax[0].set_ylabel("Threshold Voltage (V)", fontdict = font)
 ax[0].legend(prop={'family': 'serif'}, edgecolor = "black", fancybox=False)
-ax[0].set_title(title)
+ax[0].set_title(title, fontdict = font)
 plt.savefig(fname = file_name)
 plt.show()
