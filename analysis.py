@@ -3,11 +3,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 
-iv_graph = False
-steepest_line = False
-derivative = False
+iv_graph = True
+steepest_line = True
+derivative = True
 dvt_over_time = False
-lvt_over_time = True
+lvt_over_time = False
 linear_fit = False
 
 if linear_fit:
@@ -22,7 +22,7 @@ if (iv_graph or steepest_line or derivative) and (dvt_over_time or lvt_over_time
     exit()
 
 #parse xml file
-data_file = 'Data/ba133_iradiated_linear.xml'
+data_file = 'Data/arch5irradiated_3_slower.xml'
 data_file2 = None
 
 #parse data
@@ -83,7 +83,7 @@ def plot_steepest_line(datasets):
         #error calculations
         x_intercept = (-currents[max_derivative_index] / max_derivative) + voltages[max_derivative_index]
         error = np.sqrt((currents[max_derivative_index] / max_derivative) * np.sqrt((current_std[max_derivative_index] / currents[max_derivative_index])**2 + (gradient_err / max_derivative)**2)**2 + voltage_std[max_derivative_index]**2)
-        print("Threshold voltage: ", x_intercept, "+/-", error)
+        print("Steepest Line Threshold voltage: ", x_intercept, "+/-", error)
 
 def calculate_derivative(x, y):
     derivative = np.array([])
@@ -98,10 +98,11 @@ def calculate_smoothed_derivative(x, y):
     r = 7
     NC = r * (r + 1) * (2 * r + 1) / 3
     for i in range(r, len(y) - r - 1):
-        sum = 0
-        for j in range(-r, r + 1):
-            sum += y[i + j] * j
-        derivative = np.append(derivative, (sum / NC) * (1/((x[i+1]-x[i])+(x[i]-x[i-1]))/2))
+        if x[i + 1] - x[i - 1] > 0.02:
+            sum = 0
+            for j in range(-r, r + 1):
+                sum += y[i + j] * j
+            derivative = np.append(derivative, (sum / NC) * (1/((x[i+1]-x[i])+(x[i]-x[i-1]))/2))
     return list(derivative)
 
 #calculate and plot derivative
@@ -116,9 +117,9 @@ def plot_derivative(datasets):
         max_current = max(currents)
         scaled_derivative2 = np.array(derivative2) * (max_current / max(derivative2))
         offset = int(-(len(derivative2) - len(voltages)) / 2)
-        print("offset:", offset)
-        voltages = voltages[offset:-offset-1]
-        print("voltages:", len(voltages), "derivative2:", len(derivative2))
+        voltages = voltages[offset:-offset]
+        if len(voltages) != len(derivative2):
+            voltages = voltages[:-1]
         ax[0].errorbar(voltages,scaled_derivative2,fmt="--", color = 'green')
         index_max_derivative2 = derivative2.index(max(derivative2))
         max_derivative2_voltage = voltages[index_max_derivative2]
@@ -183,12 +184,12 @@ if data_file2 != None:
 if iv_graph:
     plot_iv(datasets)
     title = "Id vs Vg for a MOSFET"
-    ax[0].ylabel('Id')
-    ax[0].xlabel('Vg')
+    ax[0].set_ylabel('Id')
+    ax[0].set_xlabel('Vg')
 if steepest_line:
     plot_steepest_line(datasets)
-    ax[0].xlim(1.35, 2.85)
-    ax[0].ylim(0, 0.00015)
+    ax[0].set_xlim(1.35, 2.85)
+    ax[0].set_ylim(0, 0.0015)
 if derivative:
     plot_derivative(datasets)
 if dvt_over_time:
@@ -231,6 +232,7 @@ if dvt_over_time or lvt_over_time:
     file_name = "Graphs/" + data_file[5:-4] + "_VtT" + ".png"
 if data_file2 != None:
     file_name = "Graphs/" + data_file[5:-4] + "_VtT" + "_combined" + data_file[5:-4] + ".png"
+
 #making graph details
 font = {'family': 'serif',
         'color':  'black',
@@ -240,9 +242,9 @@ font = {'family': 'serif',
 if linear_fit:
     ax[1].set_ylabel("Normalised \nResiduals", fontdict = font)
     ax[1].set_xlabel('Time (hrs)', fontdict = font)
-else:
+if not linear_fit and (lvt_over_time):
     ax[0].set_xlabel('Time (hrs)', fontdict = font)
-ax[0].set_ylabel("Threshold Voltage (V)", fontdict = font)
+
 ax[0].legend(prop={'family': 'serif'}, edgecolor = "black", fancybox=False)
 ax[0].set_title(title, fontdict = font)
 plt.savefig(fname = file_name)
