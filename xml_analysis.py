@@ -22,7 +22,7 @@ if (iv_graph or steepest_line or derivative) and (dvt_over_time or lvt_over_time
     exit()
 
 #parse xml file
-data_file = 'Data/arch5irradiated_3_slower.xml'
+data_file = 'xml_Data/arch5irradiated_3_slower.xml'
 data_file2 = None
 
 #parse data
