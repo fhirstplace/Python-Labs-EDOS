@@ -10,6 +10,7 @@ dvt_over_time = False
 lvt_over_time = False
 linear_fit = False
 
+
 if linear_fit:
     fig, ax = plt.subplots(2, 1, sharex=True, figsize=(10,8), gridspec_kw={'height_ratios': [4, 1]})
     fig.subplots_adjust(hspace=0)
@@ -21,8 +22,10 @@ if (iv_graph or steepest_line or derivative) and (dvt_over_time or lvt_over_time
     print("Please only select compatible graph types")
     exit()
 
+ax[0].set_xlim(1.35, 2.85)
+ax[0].set_ylim(0, 0.00015)
 #parse xml file
-data_file = 'xml_Data/arch5irradiated_3_slower.xml'
+data_file = 'xml_Data/Ba133_uniradiated_linear.xml'
 data_file2 = None
 
 #parse data
@@ -49,6 +52,7 @@ def xml_to_datasets(data_file):
 #plot data
 def plot_iv(datasets):
     i = 0
+
     for dataset in datasets:
         currents = dataset[0][0]
         current_std = dataset[0][1]
@@ -78,7 +82,7 @@ def plot_steepest_line(datasets):
                     max_derivative_index = i
                     gradient_err = gradient * np.sqrt((current_std[i] / currents[i])**2 + (voltage_std[i + 1] / voltages[i + 1])**2 + (voltage_std[i] / voltages[i])**2)
         f = lambda x : max_derivative * (x - voltages[max_derivative_index]) + currents[max_derivative_index]
-        ax[0].errorbar(voltages, list(map(f,(voltages))),fmt="--", color = 'red')
+        ax[0].errorbar(voltages, list(map(f,(voltages))),fmt="--", color = 'red', label = "line of best fit" )
 
         #error calculations
         x_intercept = (-currents[max_derivative_index] / max_derivative) + voltages[max_derivative_index]
@@ -187,9 +191,9 @@ if iv_graph:
     ax[0].set_ylabel('Id')
     ax[0].set_xlabel('Vg')
 if steepest_line:
-    plot_steepest_line(datasets)
-    ax[0].set_xlim(1.35, 2.85)
-    ax[0].set_ylim(0, 0.0015)
+    plot_steepest_line(datasets, label="steepest line method")
+    ax[0].set_xlim(1.35, 2.35)
+    ax[0].set_ylim(0, 0.00015)
 if derivative:
     plot_derivative(datasets)
 if dvt_over_time:
@@ -227,7 +231,7 @@ if lvt_over_time:
 
 #define file name
 if iv_graph:
-    file_name = "Graphs/" + data_file[5:-4] + "_iv" + ".png"
+    file_name = "Graphs/" + data_file[5:-4] + "_iv1" + ".png"
 if dvt_over_time or lvt_over_time:
     file_name = "Graphs/" + data_file[5:-4] + "_VtT" + ".png"
 if data_file2 != None:
@@ -247,5 +251,6 @@ if not linear_fit and (lvt_over_time):
 
 ax[0].legend(prop={'family': 'serif'}, edgecolor = "black", fancybox=False)
 ax[0].set_title(title, fontdict = font)
-plt.savefig(fname = file_name)
+#plt.savefig(fname = file_name)
+
 plt.show()
