@@ -6,6 +6,8 @@ import csv
 data_file1 = 'counts_Data/dos_led_back.txt'
 data_file2 = 'counts_Data/dos_osl.txt'
 
+salt_file1 = 'counts_Data/'
+
 def parse_txt(data_file):
     times = []
     counts = []
